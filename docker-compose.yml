@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  #Database service
+  mysql_db:
+    image: mysql:5.7
+    restart: always
+    volumes:
+      - mysql:/var/lib/mysql:delegated
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  #Wordpress (image based on Apache)
+  wordpress:
+    depends_on:
+      - mysql_db
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "8000:80"
+      - 443:443
+    environment:
+      WORDPRESS_DB_HOST: mysql_db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_DEBUG_DISPLAY: true
+      WORDPRESS_DEBUG_LOG: true
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_DEBUG', true );
+      NEXT_VAR: false      
+
+    volumes:
+      [
+        "./wp-content:/var/www/html/wp-content:delegated",
+        "./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini",
+        "./error-logging.ini:/usr/local/etc/php/conf.d/error-logging.ini"
+      ]
+       
+
+volumes:
+  mysql: {}
